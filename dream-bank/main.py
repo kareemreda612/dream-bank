@@ -1,6 +1,5 @@
 """
-بنك الأحلام - الإصدار النهائي المتكامل
-Dream Bank - Final Complete Version
+بنك الأحلام - نسخة Zeabur النهائية
 """
 
 import sqlite3
@@ -13,19 +12,14 @@ app.secret_key = "dreambank_super_secret_key_2025_final"
 
 # ==================== قاعدة البيانات ====================
 def init_db():
-    """إنشاء قاعدة البيانات وجداولها"""
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
-    
-    # جدول المستخدمين
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   username TEXT UNIQUE NOT NULL,
                   password TEXT NOT NULL,
                   email TEXT,
                   join_date TEXT NOT NULL)''')
-    
-    # جدول الأحلام
     c.execute('''CREATE TABLE IF NOT EXISTS dreams
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   user_id INTEGER NOT NULL,
@@ -34,32 +28,24 @@ def init_db():
                   is_public INTEGER DEFAULT 1,
                   likes INTEGER DEFAULT 0,
                   FOREIGN KEY (user_id) REFERENCES users (id))''')
-    
     conn.commit()
     conn.close()
 
-# تهيئة قاعدة البيانات عند بدء التشغيل
 init_db()
 
 # ==================== دوال مساعدة ====================
 def get_stats():
-    """الحصول على إحصائيات الموقع"""
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
-    
     c.execute("SELECT COUNT(*) FROM dreams")
     total_dreams = c.fetchone()[0] or 0
-    
     c.execute("SELECT COUNT(*) FROM users")
     total_users = c.fetchone()[0] or 0
-    
     c.execute("SELECT SUM(likes) FROM dreams")
     total_likes = c.fetchone()[0] or 0
-    
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     c.execute("SELECT COUNT(*) FROM dreams WHERE dream_date LIKE ?", (f"{today}%",))
     today_dreams = c.fetchone()[0] or 0
-    
     conn.close()
     return {
         'total_dreams': total_dreams,
@@ -69,7 +55,6 @@ def get_stats():
     }
 
 def get_recent_dreams(limit=5):
-    """الحصول على أحدث الأحلام العامة"""
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
     c.execute("""
@@ -87,28 +72,21 @@ def get_recent_dreams(limit=5):
 # ==================== الصفحات الرئيسية ====================
 @app.route('/')
 def index():
-    """الصفحة الرئيسية"""
     stats = get_stats()
     recent_dreams = get_recent_dreams(5)
-    return render_template('index.html', 
-                          **stats,
-                          recent_dreams=recent_dreams)
+    return render_template('index.html', **stats, recent_dreams=recent_dreams)
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit_dream():
-    """صفحة تسجيل حلم جديد"""
     if request.method == 'POST':
         if 'user_id' not in session:
             flash('يجب تسجيل الدخول أولاً', 'error')
             return redirect(url_for('login'))
-        
         dream_text = request.form.get('dream_text', '').strip()
         if not dream_text:
             flash('يرجى كتابة الحلم', 'error')
             return redirect(url_for('submit_dream'))
-        
         is_public = 1 if request.form.get('is_public') else 0
-        
         conn = sqlite3.connect('dreams.db')
         c = conn.cursor()
         c.execute("""
@@ -118,15 +96,12 @@ def submit_dream():
               datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), is_public))
         conn.commit()
         conn.close()
-        
         flash('✅ تم تسجيل حلمك بنجاح!', 'success')
         return redirect(url_for('index'))
-    
     return render_template('submit.html')
 
 @app.route('/explore')
 def explore():
-    """استكشاف الأحلام العامة"""
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
     c.execute("""
@@ -142,7 +117,6 @@ def explore():
 
 @app.route('/dream/<int:dream_id>')
 def view_dream(dream_id):
-    """عرض حلم محدد"""
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
     c.execute("""
@@ -153,7 +127,6 @@ def view_dream(dream_id):
     """, (dream_id,))
     dream = c.fetchone()
     conn.close()
-    
     if dream:
         return render_template('dream.html', dream=dream)
     else:
@@ -162,7 +135,6 @@ def view_dream(dream_id):
 
 @app.route('/like/<int:dream_id>')
 def like_dream(dream_id):
-    """إعجاب بحلم"""
     conn = sqlite3.connect('dreams.db')
     c = conn.cursor()
     c.execute("UPDATE dreams SET likes = likes + 1 WHERE id = ?", (dream_id,))
@@ -174,19 +146,15 @@ def like_dream(dream_id):
 # ==================== نظام المستخدمين ====================
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """تسجيل مستخدم جديد"""
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
         email = request.form.get('email', '').strip()
-        
         if not username or not password:
             flash('اسم المستخدم وكلمة السر مطلوبان', 'error')
             return redirect(url_for('register'))
-        
         conn = sqlite3.connect('dreams.db')
         c = conn.cursor()
-        
         try:
             c.execute("""
                 INSERT INTO users (username, password, email, join_date) 
@@ -200,23 +168,19 @@ def register():
             flash('❌ اسم المستخدم موجود بالفعل!', 'error')
         finally:
             conn.close()
-    
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """تسجيل الدخول"""
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
-        
         conn = sqlite3.connect('dreams.db')
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE username = ? AND password = ?", 
                  (username, password))
         user = c.fetchone()
         conn.close()
-        
         if user:
             session['user_id'] = user[0]
             session['username'] = user[1]
@@ -224,18 +188,15 @@ def login():
             return redirect(url_for('index'))
         else:
             flash('❌ اسم المستخدم أو كلمة السر خطأ!', 'error')
-    
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
-    """تسجيل الخروج"""
     session.clear()
     flash('👋 تم تسجيل الخروج', 'success')
     return redirect(url_for('index'))
 
 # ==================== تشغيل التطبيق ====================
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)
