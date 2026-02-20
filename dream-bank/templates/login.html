@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | بنك الأحلام</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        :root {
+            --primary: #6b46c1;
+            --primary-light: #9f7aea;
+            --primary-dark: #553c9a;
+            --secondary: #f687b3;
+            --accent: #fbbf24;
+            --dark: #1a202c;
+            --gray: #718096;
+            --light-gray: #e2e8f0;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        body {
+            background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+            min-height: 100vh;
+        }
+
+        /* ================ الهيدر المتحرك الاحترافي ================ */
+        header {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(107, 70, 193, 0.15);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+            height: 80px;
+            display: flex;
+            align-items: center;
+        }
+
+        header.hidden {
+            transform: translateY(-100%);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 24px;
+            font-weight: 900;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: transform 0.3s;
+        }
+
+        .logo i {
+            font-size: 28px;
+            background: var(--gradient2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo:hover {
+            transform: scale(1.02);
+        }
+
+        .nav {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: color 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient);
+            transition: width 0.3s ease;
+        }
+
+        .nav a:hover {
+            color: var(--primary);
+        }
+
+        .nav a:hover::after {
+            width: 100%;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-menu a {
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 0.95rem;
+        }
+
+        .user-menu a:first-child {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .user-menu a:first-child:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .user-menu a:first-child:hover::after {
+            width: 0;
+        }
+
+        .user-menu a:last-child {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+
+        .user-menu a:last-child:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .user-menu a:last-child:hover::after {
+            width: 0;
+        }
+
+        /* تعويض مساحة الهيدر في المحتوى */
+        .main-content {
+            padding-top: 80px;
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* محتوى تسجيل الدخول */
+        .login-container {
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 450px;
+            max-width: 90%;
+            margin: 40px auto;
+        }
+
+        .logo-large {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 900;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .logo-large i {
+            font-size: 48px;
+            background: var(--gradient2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(107, 70, 193, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .links a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* تصميم متجاوب */
+        @media (max-width: 768px) {
+            header {
+                height: auto;
+                min-height: 80px;
+                padding: 0.8rem 5%;
+            }
+            
+            .header-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav {
+                gap: 1rem;
+                justify-content: center;
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            
+            .main-content {
+                padding-top: 120px;
+            }
+            
+            .login-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header id="mainHeader">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-cloud-moon"></i>
+                <span>بنك الأحلام</span>
+            </div>
+            <nav class="nav">
+                <a href="/">الرئيسية</a>
+                <a href="/submit">سجل حلمك</a>
+                <a href="/explore">استكشف</a>
+                <div class="user-menu">
+                    {% if session.user_id %}
+                        <span class="username"><i class="fas fa-user"></i> {{ session.username }}</span>
+                        <a href="/logout"><i class="fas fa-sign-out-alt"></i> خروج</a>
+                    {% else %}
+                        <a href="/login"><i class="fas fa-sign-in-alt"></i> دخول</a>
+                        <a href="/register"><i class="fas fa-user-plus"></i> تسجيل</a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="login-container">
+            <div class="logo-large">
+                <i class="fas fa-cloud-moon"></i>
+                <span>بنك الأحلام</span>
+            </div>
+            <h1>تسجيل الدخول</h1>
+            <form method="POST">
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" name="username" required placeholder="أدخل اسم المستخدم">
+                </div>
+                <div class="form-group">
+                    <label>كلمة السر</label>
+                    <input type="password" name="password" required placeholder="أدخل كلمة السر">
+                </div>
+                <button type="submit" class="btn">دخول</button>
+            </form>
+            <div class="links">
+                <a href="/register">ليس لديك حساب؟ سجل الآن</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // إظهار وإخفاء الهيدر عند التمرير
+        const header = document.getElementById('mainHeader');
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        window.addEventListener('scroll', () => {
+            lastScrollY = window.scrollY;
+            
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    if (lastScrollY > 50) {
+                        if (lastScrollY > window.lastScrollYValue) {
+                            header.classList.add('hidden');
+                        } else {
+                            header.classList.remove('hidden');
+                        }
+                    } else {
+                        header.classList.remove('hidden');
+                    }
+                    
+                    window.lastScrollYValue = lastScrollY;
+                    ticking = false;
+                });
+                
+                ticking = true;
+            }
+        });
+    </script>
+</body>
+</html>
