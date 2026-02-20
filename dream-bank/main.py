@@ -197,6 +197,12 @@ def logout():
     return redirect(url_for('index'))
 
 # ==================== تشغيل التطبيق ====================
+# بدلاً من:
+# if __name__ == '__main__':
+#     app.run()
+
+# اكتب هذا:
+app = app  # مطلوب لـ Vercel
+
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run()
