@@ -1,36 +1,21 @@
 """
-بنك الأحلام - نسخة Vercel النهائية والمضمونة
+بنك الأحلام - نسخة Railway النهائية
 """
 
 import os
-import sys
 import sqlite3
 import datetime
-import tempfile
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
-# ==================== تكوين المسارات (المهم جداً) ====================
-# هذا السطر يحدد المسار الحالي للمشروع
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# مسار مجلد templates (بنسبة 100% صح)
-TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
-
-# طباعة المسار للتأكد (سيظهر في logs)
-print(f"BASE_DIR: {BASE_DIR}")
-print(f"TEMPLATE_DIR: {TEMPLATE_DIR}")
-print(f"Files in TEMPLATE_DIR: {os.listdir(TEMPLATE_DIR) if os.path.exists(TEMPLATE_DIR) else 'NOT FOUND'}")
-
-# إنشاء التطبيق مع تحديد مجلد templates
-app = Flask(__name__, template_folder=TEMPLATE_DIR)
+app = Flask(__name__)
 app.secret_key = "dreambank_super_secret_key_2025_final"
 
-# ==================== قاعدة البيانات (في مجلد مؤقت) ====================
-db_path = os.path.join(tempfile.gettempdir(), 'dreams.db')
+# ==================== قاعدة البيانات ====================
+# Railway يسمح بالكتابة، لذلك نستخدم ملف عادي
+DB_PATH = 'dreams.db'
 
 def init_db():
-    """إنشاء قاعدة البيانات"""
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,11 +34,13 @@ def init_db():
     conn.commit()
     conn.close()
 
-init_db()
+# تأكد من وجود قاعدة البيانات
+if not os.path.exists(DB_PATH):
+    init_db()
 
 # ==================== دوال مساعدة ====================
 def get_stats():
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("SELECT COUNT(*) FROM dreams")
     total_dreams = c.fetchone()[0] or 0
@@ -73,7 +60,7 @@ def get_stats():
     }
 
 def get_recent_dreams(limit=5):
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""
         SELECT dreams.*, users.username 
@@ -90,13 +77,9 @@ def get_recent_dreams(limit=5):
 # ==================== الصفحات الرئيسية ====================
 @app.route('/')
 def index():
-    """الصفحة الرئيسية"""
-    try:
-        stats = get_stats()
-        recent_dreams = get_recent_dreams(5)
-        return render_template('index.html', **stats, recent_dreams=recent_dreams)
-    except Exception as e:
-        return f"خطأ في الصفحة الرئيسية: {str(e)}", 500
+    stats = get_stats()
+    recent_dreams = get_recent_dreams(5)
+    return render_template('index.html', **stats, recent_dreams=recent_dreams)
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit_dream():
@@ -109,7 +92,7 @@ def submit_dream():
             flash('يرجى كتابة الحلم', 'error')
             return redirect(url_for('submit_dream'))
         is_public = 1 if request.form.get('is_public') else 0
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("""
             INSERT INTO dreams (user_id, dream_text, dream_date, is_public) 
@@ -124,7 +107,7 @@ def submit_dream():
 
 @app.route('/explore')
 def explore():
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""
         SELECT dreams.*, users.username 
@@ -139,7 +122,7 @@ def explore():
 
 @app.route('/dream/<int:dream_id>')
 def view_dream(dream_id):
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("""
         SELECT dreams.*, users.username 
@@ -157,7 +140,7 @@ def view_dream(dream_id):
 
 @app.route('/like/<int:dream_id>')
 def like_dream(dream_id):
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute("UPDATE dreams SET likes = likes + 1 WHERE id = ?", (dream_id,))
     conn.commit()
@@ -175,7 +158,7 @@ def register():
         if not username or not password:
             flash('اسم المستخدم وكلمة السر مطلوبان', 'error')
             return redirect(url_for('register'))
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         try:
             c.execute("""
@@ -197,7 +180,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE username = ? AND password = ?", 
                  (username, password))
@@ -218,9 +201,7 @@ def logout():
     flash('👋 تم تسجيل الخروج', 'success')
     return redirect(url_for('index'))
 
-# ==================== مطلوب لـ Vercel ====================
-# هذا السطر مهم جداً
-app = app
-
+# ==================== تشغيل التطبيق ====================
 if __name__ == '__main__':
-    app.run()
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
